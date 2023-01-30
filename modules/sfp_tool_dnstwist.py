@@ -16,7 +16,7 @@ from pathlib import Path
 from shutil import which
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
+from cts import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
 
 class sfp_tool_dnstwist(SpiderFootPlugin):
@@ -94,7 +94,8 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             cmd = ['dnstwist']
         else:
             if not self.opts['dnstwistpath']:
-                self.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!")
+                self.error(
+                    "You enabled sfp_tool_dnstwist but did not set a path to the tool!")
                 self.errorState = True
                 return
 
@@ -120,7 +121,8 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             return
 
         try:
-            p = Popen(cmd + ["-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
+            p = Popen(cmd + ["-f", "json", "-r", eventData],
+                      stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
             if p.returncode == 0:
                 content = stdout
@@ -144,7 +146,8 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
                                           self.__name__, event)
                     self.notifyListeners(evt)
             except Exception as e:
-                self.error("Couldn't parse the JSON output of DNSTwist: " + str(e))
+                self.error(
+                    "Couldn't parse the JSON output of DNSTwist: " + str(e))
                 return
         except Exception as e:
             self.error("Unable to run DNSTwist: " + str(e))

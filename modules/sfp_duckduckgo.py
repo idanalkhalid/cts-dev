@@ -12,7 +12,7 @@
 
 import json
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_duckduckgo(SpiderFootPlugin):
@@ -75,7 +75,8 @@ class sfp_duckduckgo(SpiderFootPlugin):
         eventData = event.data
 
         if self.opts['affiliatedomains'] and "AFFILIATE_" in eventName:
-            eventData = self.sf.hostDomain(eventData, self.opts['_internettlds'])
+            eventData = self.sf.hostDomain(
+                eventData, self.opts['_internettlds'])
             if not eventData:
                 return
 
@@ -115,7 +116,8 @@ class sfp_duckduckgo(SpiderFootPlugin):
             if "AFFILIATE" in eventName:
                 event_type = "AFFILIATE_" + event_type
 
-            evt = SpiderFootEvent(event_type, str(abstract_text), self.__name__, event)
+            evt = SpiderFootEvent(event_type, str(
+                abstract_text), self.__name__, event)
             self.notifyListeners(evt)
 
         related_topics = ret.get('RelatedTopics')
@@ -136,7 +138,8 @@ class sfp_duckduckgo(SpiderFootPlugin):
                     self.debug("No category text found from DuckDuckGo.")
                     continue
 
-                evt = SpiderFootEvent(event_type, category, self.__name__, event)
+                evt = SpiderFootEvent(
+                    event_type, category, self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_duckduckgo class

@@ -16,7 +16,7 @@ import urllib
 
 from netaddr import IPNetwork
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_dnsresolve(SpiderFootPlugin):
@@ -79,7 +79,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 target.setAlias(host, "INTERNET_NAME")
                 idnahost = host.encode("idna")
                 if idnahost != host:
-                    target.setAlias(idnahost.decode('ascii', errors='replace'), "INTERNET_NAME")
+                    target.setAlias(idnahost.decode(
+                        'ascii', errors='replace'), "INTERNET_NAME")
 
                 # If the target was a hostname/sub-domain, we can
                 # add the domain as an alias for the target. But
@@ -124,7 +125,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if t == "NETBLOCK_OWNER":
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(v).prefixlen < max_netblock:
-                self.debug(f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
+                self.debug(
+                    f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
                 return list(set(ret))
 
             for addr in IPNetwork(v):
@@ -156,7 +158,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if t == "NETBLOCKV6_OWNER":
             max_netblock = self.opts['maxv6netblock']
             if IPNetwork(v).prefixlen < max_netblock:
-                self.debug(f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
+                self.debug(
+                    f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
                 return list(set(ret))
 
             for addr in IPNetwork(v):
@@ -229,23 +232,29 @@ class sfp_dnsresolve(SpiderFootPlugin):
         # Parse Microsoft workaround "ipv6-literal.net" fake domain for IPv6 UNC paths
         # For internal use on Windows systems (should not resolve in DNS)
         if eventData.endswith(".ipv6-literal.net") and eventName == "AFFILIATE_INTERNET_NAME":
-            ipv6 = eventData.split(".ipv6-literal.net")[0].replace('-', ':').replace('s', '%').split('%')[0]
+            ipv6 = eventData.split(
+                ".ipv6-literal.net")[0].replace('-', ':').replace('s', '%').split('%')[0]
             if self.sf.validIP6(ipv6):
                 if self.getTarget().matches(ipv6):
-                    evt = SpiderFootEvent("IPV6_ADDRESS", ipv6, self.__name__, parentEvent)
+                    evt = SpiderFootEvent(
+                        "IPV6_ADDRESS", ipv6, self.__name__, parentEvent)
                 else:
-                    evt = SpiderFootEvent("AFFILIATE_IPV6_ADDRESS", ipv6, self.__name__, parentEvent)
+                    evt = SpiderFootEvent(
+                        "AFFILIATE_IPV6_ADDRESS", ipv6, self.__name__, parentEvent)
                 self.notifyListeners(evt)
             return
 
         # Convert ARPA in-addr.arpa address to IPv4 address
         if eventData.endswith(".in-addr.arpa") and eventName == "AFFILIATE_INTERNET_NAME":
-            ipv4 = '.'.join(reversed(eventData.split('.in-addr.arpa')[0].split('.')))
+            ipv4 = '.'.join(
+                reversed(eventData.split('.in-addr.arpa')[0].split('.')))
             if self.sf.validIP(ipv4):
                 if self.getTarget().matches(ipv4):
-                    evt = SpiderFootEvent("IP_ADDRESS", ipv4, self.__name__, parentEvent)
+                    evt = SpiderFootEvent(
+                        "IP_ADDRESS", ipv4, self.__name__, parentEvent)
                 else:
-                    evt = SpiderFootEvent("AFFILIATE_IPADDR", ipv4, self.__name__, parentEvent)
+                    evt = SpiderFootEvent(
+                        "AFFILIATE_IPADDR", ipv4, self.__name__, parentEvent)
                 self.notifyListeners(evt)
 
         # Simply translates these to their domains
@@ -259,7 +268,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
             # What we've been provided might be a domain, so report it
             if self.sf.isDomain(eventData, self.opts['_internettlds']):
-                evt = SpiderFootEvent(ev, eventData, self.__name__, parentEvent)
+                evt = SpiderFootEvent(
+                    ev, eventData, self.__name__, parentEvent)
                 self.notifyListeners(evt)
 
             # In case the domain of the provided host is different, report that too
@@ -328,7 +338,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 max_netblock = self.opts['maxnetblock']
 
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.debug(
+                    f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
             self.debug(f"Looking up IPs in owned netblock: {eventData}")
@@ -349,7 +360,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if not addrs:
                     continue
 
-                self.debug(f"Found {len(addrs)} reversed hostnames from {ipaddr} ({addrs})")
+                self.debug(
+                    f"Found {len(addrs)} reversed hostnames from {ipaddr} ({addrs})")
                 for addr in addrs:
                     if self.checkForStop():
                         return
@@ -379,7 +391,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if offset < 0:
                     continue
 
-                pat = re.compile(r"[^a-z0-9\-\.]([a-z0-9\-\.]*\." + name + ")", re.DOTALL | re.MULTILINE)
+                pat = re.compile(
+                    r"[^a-z0-9\-\.]([a-z0-9\-\.]*\." + name + ")", re.DOTALL | re.MULTILINE)
                 while offset >= 0:
                     # If the target was found at the beginning of the content, skip past it
                     if offset == 0:
@@ -470,7 +483,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         if htype in ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]:
             if not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
-                evt = SpiderFootEvent(f"{htype}_UNRESOLVED", host, self.__name__, parentEvent)
+                evt = SpiderFootEvent(
+                    f"{htype}_UNRESOLVED", host, self.__name__, parentEvent)
                 self.notifyListeners(evt)
                 return
 
@@ -498,7 +512,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     if parentHash in self.hostresults[ip6] or evt.data == ip6:
                         self.debug(f"Skipping host, {ip6}, already processed.")
                         continue
-                    self.hostresults[ip6] = self.hostresults[ip6] + [parentHash]
+                    self.hostresults[ip6] = self.hostresults[ip6] + \
+                        [parentHash]
 
                 evt6 = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
                 self.notifyListeners(evt6)

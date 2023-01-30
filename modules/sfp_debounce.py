@@ -13,7 +13,7 @@
 
 import json
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_debounce(SpiderFootPlugin):
@@ -105,10 +105,12 @@ class sfp_debounce(SpiderFootPlugin):
         isDisposable = data.get('disposable')
 
         if isDisposable == "true":
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            evt = SpiderFootEvent(
+                "RAW_RIR_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
 
-            evt = SpiderFootEvent("EMAILADDR_DISPOSABLE", eventData, self.__name__, event)
+            evt = SpiderFootEvent("EMAILADDR_DISPOSABLE",
+                                  eventData, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_debounce class

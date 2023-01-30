@@ -1,0 +1,31 @@
+<%include file="admin/HEADER.tmpl"/>
+<div class="sign-form">
+  <h2 class="m20">User Profile &nbsp;<img id="loader" src="${docroot}/static/img/loader.gif" style="display: none;"></h2>
+
+  % if need_license == 'no license':
+    <div class='alert alert-danger'>
+      <h4>Activate</h4>
+      <p>You need a license to use the API. To enable the API <a href="https://www.threatpipes.com/download">get a free license key here</a>.</p>
+    </div>
+  % else:
+    <div class="api-key">
+      <p><strong>API KEY:</strong> ${api_key}</p><a class="btn btn-warning btn-sm" href="${docroot}/auth/apikeyrecreate">Refresh</a>
+    </div>
+  % endif
+
+  <h4>Change password</h4>
+  <h4 style="color: red;">${msg}</h4>
+  <form method="POST">
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" class="form-control input-xlarge" name="password" id="password" placeholder="Enter password">
+    </div>
+    <div class="form-group">
+      <label for="password_2">Confirm Password</label>
+      <input type="password" class="form-control input-xlarge" name="password_2" id="password_2" placeholder="Confirm Password">
+    </div>
+    <button type="submit" class="btn btn-success">Change</button>
+  </form>
+</div>
+
+<%include file="FOOTER.tmpl"/>

@@ -13,7 +13,7 @@
 
 from netaddr import IPNetwork
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_surbl(SpiderFootPlugin):
@@ -150,7 +150,8 @@ class sfp_surbl(SpiderFootPlugin):
 
             max_subnet = self.opts['maxsubnet']
             if IPNetwork(eventData).prefixlen < max_subnet:
-                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                self.debug(
+                    f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
             malicious_type = "MALICIOUS_SUBNET"
@@ -161,7 +162,8 @@ class sfp_surbl(SpiderFootPlugin):
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
-                self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                self.debug(
+                    f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
             malicious_type = "MALICIOUS_NETBLOCK"
@@ -217,10 +219,12 @@ class sfp_surbl(SpiderFootPlugin):
                     self.errorState = True
                     continue
 
-                evt = SpiderFootEvent(blacklist_type, f"SURBL [{addr}]", self.__name__, event)
+                evt = SpiderFootEvent(
+                    blacklist_type, f"SURBL [{addr}]", self.__name__, event)
                 self.notifyListeners(evt)
 
-                evt = SpiderFootEvent(malicious_type, f"SURBL [{addr}]", self.__name__, event)
+                evt = SpiderFootEvent(
+                    malicious_type, f"SURBL [{addr}]", self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_surbl class

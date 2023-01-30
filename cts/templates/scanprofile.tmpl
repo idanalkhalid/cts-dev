@@ -1,0 +1,112 @@
+<%include file="HEADER.tmpl"/>
+<main class="container" id="mainbody" >
+<div class="m20">
+  <h2>${scan_profile[1]} <img id="loader" src="/static/img/loader.gif" style="display: none;"></h2>
+</div>
+<form class="form" id="profile_form" action="/scanprofileupdate?scanprofile_id=${scan_profile[0]}" method='POST'>
+  <div class="form-group mb-3">
+    <label for="name">Name</label>
+    <input type="text" class="form-control input-xlarge" required name="name" id="name" placeholder="Enter name" value="${scan_profile[1]}">
+  </div>
+  <div class="form-group mb-3">
+    <label for="slug">Profile slug</label>
+    <input type="text" class="form-control input-xlarge" required name="slug" id="slug" placeholder="Enter slug" value="${scan_profile[2]}">
+  </div>
+  <div class="form-group mb-3">
+    <label for="name">Description</label>
+    <input type="text" class="form-control input-xxlarge" required name="description" id="description" placeholder="Enter description" value="${scan_profile[3]}">
+  </div>
+  <div id='selectors' class="float-right mt-3">
+    <button type="button" onClick='selectAll()' class="btn btn-primary btn-sm">Select All</button>
+    <button type="button" onClick='deselectAll()' class="btn btn-primary btn-sm">De-Select All</button>
+    <a href="${docroot}/scanprofiles" data-title="Create new scan profile" style="display: none;" class="btn btn-outline-success btn-sm">Add scan profile</a>
+  </div>
+  <table class="table table-striped table-condensed" id="moduletable">
+    <thead>
+      <tr>
+        <th width="5%"></th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Listens for events</th>
+        <th>Produces events</th>
+      </tr>
+    </thead>
+      <%
+      modlist = dict()
+      for item in modules:
+          modlist[modules[item]['name']] = item
+      %>
+    <tbody>
+      % for it in sorted(modlist, key=lambda v: v.upper()):
+        <% item = modlist[it] %>
+        <% keyicon = "" %>
+        <% keylist = dict((k, v) for k, v in modules[item]['opts'].items() if not k.startswith('_')) %>
+        % if len(keylist) > 0:
+        <% apikeylist = dict((k, v) for k, v in modules[item]['opts'].items() if k.find("api_key") >= 0) %>
+          % if len(apikeylist) != 0: 
+            <% keyicon = "&nbsp;&nbsp;<i class=\"fas fa-lock green-icon\"></i>" %>
+            % for seckey in apikeylist.values():
+              % if seckey == '': 
+                <% keyicon = "&nbsp;&nbsp;<i class=\"fas fa-lock red-icon\"></i>" %>
+              % endif
+            % endfor
+          % endif
+        % endif
+        % if item != "tpp__stor_db" and item != "tpp__stor_stdout":
+          <tr>
+            <td>
+              % if item in scan_profile[4]:
+                <input type="checkbox" id="module_${item}" checked>
+              % else:
+                <input type="checkbox" id="module_${item}">
+              % endif
+            </td>
+            <td>${modules[item]['name']}${keyicon}</td>
+            <td>${modules[item]['descr']}</td>
+            <td>${modules[item]['group']}</td>
+            <td class="info-clear">${modules[item]['consumes']}</td>
+          </tr>
+        % endif
+      % endfor
+    </tbody>
+  </table>
+  <div class="control-group">
+    <div class="controls">
+      <input type="hidden" id="modules" name="modules" value="">
+      <button type="submit" class="btn btn-success">Update</button>
+      <a href="${docroot}/scanprofiledelete?idset=${scan_profile[2]}" class="btn btn-danger m20">Delete</a>
+    </div>
+  </div>
+</form>
+
+<script>
+  var id = '${scan_profile[0]}'
+
+  function selectAll() {
+    $("[id^=module_]").prop("checked", true);
+  }
+
+  function deselectAll() {
+    $("[id^=module_]").prop("checked", false);
+  }
+
+  $("#profile_form").submit(function() {
+    list = "";
+    $("[id^=module_]").each(function () {
+      if ($(this).is(":checked")) {
+        list += $(this).attr('id') + ",";
+      }
+    });
+    if (list == "") {
+      alert("Select at least one module")
+      event.preventDefault();
+    }
+    if (/\s/g.test($("#slug").val())) {
+      alert("Slug must not contain spaces")
+      event.preventDefault();
+    }
+    $("#modules").val(list);
+  });
+</script>
+</main>
+<%include file="FOOTER.tmpl"/>

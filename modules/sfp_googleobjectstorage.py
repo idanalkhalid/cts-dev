@@ -15,7 +15,7 @@ import random
 import threading
 import time
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_googleobjectstorage(SpiderFootPlugin):
@@ -73,7 +73,8 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
         return ["CLOUD_STORAGE_BUCKET", "CLOUD_STORAGE_BUCKET_OPEN"]
 
     def checkSite(self, url):
-        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
+        res = self.sf.fetchUrl(
+            url, timeout=10, useragent="SpiderFoot", noLog=True)
 
         if not res['content']:
             return
@@ -164,7 +165,8 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
         if eventName == "LINKED_URL_EXTERNAL":
             if ".storage.googleapis.com" in eventData:
                 b = self.sf.urlFQDN(eventData)
-                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
+                evt = SpiderFootEvent(
+                    "CLOUD_STORAGE_BUCKET", b, self.__name__, event)
                 self.notifyListeners(evt)
             return
 
@@ -188,7 +190,8 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
         ret = self.batchSites(urls)
         for b in ret:
             bucket = b.split(":")
-            evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", bucket[0] + ":" + bucket[1], self.__name__, event)
+            evt = SpiderFootEvent(
+                "CLOUD_STORAGE_BUCKET", bucket[0] + ":" + bucket[1], self.__name__, event)
             self.notifyListeners(evt)
             if bucket[2] != "0":
                 bucketname = bucket[1].replace("//", "")

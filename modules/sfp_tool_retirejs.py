@@ -17,7 +17,7 @@ import shutil
 import tempfile
 from subprocess import Popen, PIPE, TimeoutExpired
 
-from spiderfoot import SpiderFootPlugin, SpiderFootEvent
+from cts import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_tool_retirejs(SpiderFootPlugin):
@@ -81,7 +81,8 @@ class sfp_tool_retirejs(SpiderFootPlugin):
             return
 
         if not self.opts['retirejs_path']:
-            self.error("You enabled sfp_tool_retirejs but did not set a path to the tool!")
+            self.error(
+                "You enabled sfp_tool_retirejs but did not set a path to the tool!")
             self.errorState = True
             return
 

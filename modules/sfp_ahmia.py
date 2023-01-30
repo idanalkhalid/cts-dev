@@ -16,7 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_ahmia(SpiderFootPlugin):
@@ -117,7 +117,8 @@ class sfp_ahmia(SpiderFootPlugin):
 
         # We don't bother with pagination as Ahmia seems fairly limited in coverage
         # and displays hundreds of results per page
-        links = re.findall("redirect_url=(.[^\"]+)\"", content, re.IGNORECASE | re.DOTALL)
+        links = re.findall(
+            "redirect_url=(.[^\"]+)\"", content, re.IGNORECASE | re.DOTALL)
 
         if not links:
             self.info(f"No results for {eventData} returned from Ahmia.fi.")
@@ -139,7 +140,8 @@ class sfp_ahmia(SpiderFootPlugin):
                 continue
 
             if not self.opts['fetchlinks']:
-                evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
+                evt = SpiderFootEvent(
+                    "DARKNET_MENTION_URL", link, self.__name__, event)
                 self.notifyListeners(evt)
                 reported = True
                 continue
@@ -159,7 +161,8 @@ class sfp_ahmia(SpiderFootPlugin):
                 self.debug(f"Ignoring {link} as no mention of {eventData}")
                 continue
 
-            evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
+            evt = SpiderFootEvent("DARKNET_MENTION_URL",
+                                  link, self.__name__, event)
             self.notifyListeners(evt)
             reported = True
 
@@ -171,7 +174,8 @@ class sfp_ahmia(SpiderFootPlugin):
                 continue
 
             wdata = res['content'][startIndex:endIndex]
-            evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", f"...{wdata}...", self.__name__, evt)
+            evt = SpiderFootEvent("DARKNET_MENTION_CONTENT",
+                                  f"...{wdata}...", self.__name__, evt)
             self.notifyListeners(evt)
 
         if reported:

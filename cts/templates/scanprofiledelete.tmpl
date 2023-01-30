@@ -1,0 +1,20 @@
+<%include file="HEADER.tmpl"/>
+<div class="alert alert-error">
+<h4>Confirm Deletion</h4>
+<br>
+% if id != None:
+Please confirm you wish to delete the scan profile '${name}'<br><br>
+<a class='btn btn-danger' href='${docroot}/scanprofiledelete?idset=${id}&confirm=1'>Confirm Deletion</a>
+% endif
+% if len(ids) > 0:
+Please confirm you wish to delete the scan profiles:<br>
+<ul>
+% for nm in names:
+    <li>${nm}</li>
+% endfor
+<% idlist = ','.join(ids) %>
+</ul>
+<a class='btn btn-danger' href='${docroot}/scanprofiledelete?idset=${idlist}&confirm=1'>Confirm Deletion</a>
+% endif
+</div>
+<%include file="FOOTER.tmpl"/>

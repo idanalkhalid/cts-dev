@@ -13,7 +13,7 @@
 
 import json
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_arin(SpiderFootPlugin):
@@ -115,7 +115,8 @@ class sfp_arin(SpiderFootPlugin):
             self.debug(f"Error processing JSON response: {e}")
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, self.currentEventSrc)
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(
+            data), self.__name__, self.currentEventSrc)
         self.notifyListeners(evt)
         return data
 

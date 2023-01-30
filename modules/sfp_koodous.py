@@ -17,7 +17,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_koodous(SpiderFootPlugin):
@@ -78,7 +78,8 @@ class sfp_koodous(SpiderFootPlugin):
         ]
 
     def queryPackageName(self, qry, cursor=''):
-        package_name = qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
+        package_name = qry.encode('raw_unicode_escape').decode(
+            "ascii", errors='replace')
 
         params = urllib.parse.urlencode({
             'cursor': cursor,
@@ -159,7 +160,8 @@ class sfp_koodous(SpiderFootPlugin):
         self.results[eventData] = True
 
         # Reverse domain name to create potential package name
-        domain_reversed = '.'.join(list(reversed(eventData.lower().split('.'))))
+        domain_reversed = '.'.join(
+            list(reversed(eventData.lower().split('.'))))
 
         max_pages = int(self.opts['max_pages'])
         page = 1
@@ -203,12 +205,13 @@ class sfp_koodous(SpiderFootPlugin):
                     app_full_name = f"{app} ({package_name})"
 
                 if (
-                    domain_reversed != package_name.lower()
-                    and not package_name.lower().startswith(f"{domain_reversed}.")
-                    and not package_name.lower().endswith(f".{domain_reversed}")
-                    and f".{domain_reversed}." not in package_name.lower()
+                    domain_reversed != package_name.lower() and
+                    not package_name.lower().startswith(f"{domain_reversed}.") and
+                    not package_name.lower().endswith(f".{domain_reversed}") and
+                    f".{domain_reversed}." not in package_name.lower()
                 ):
-                    self.debug(f"App {app_full_name} does not match {domain_reversed}, skipping")
+                    self.debug(
+                        f"App {app_full_name} does not match {domain_reversed}, skipping")
                     continue
 
                 sha256 = result.get('sha256')
@@ -218,12 +221,14 @@ class sfp_koodous(SpiderFootPlugin):
 
                 app_data = f"{app_full_name}\n<SFURL>https://koodous.com/apks/{sha256}</SFURL>"
 
-                evt = SpiderFootEvent('APPSTORE_ENTRY', app_data, self.__name__, event)
+                evt = SpiderFootEvent(
+                    'APPSTORE_ENTRY', app_data, self.__name__, event)
                 self.notifyListeners(evt)
                 found = True
 
             if found:
-                evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(data), self.__name__, event)
+                evt = SpiderFootEvent(
+                    'RAW_RIR_DATA', json.dumps(data), self.__name__, event)
                 self.notifyListeners(evt)
 
             if not data.get('next'):

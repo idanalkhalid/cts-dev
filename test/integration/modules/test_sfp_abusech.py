@@ -3,7 +3,7 @@ import unittest
 
 from modules.sfp_abusech import sfp_abusech
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent, SpiderFootTarget
+from cts import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
@@ -25,7 +25,8 @@ class TestModuleIntegrationAbusech(unittest.TestCase):
         event_data = 'example data'
         event_module = ''
         source_event = ''
-        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+        evt = SpiderFootEvent(event_type, event_data,
+                              event_module, source_event)
 
         result = module.handleEvent(evt)
 

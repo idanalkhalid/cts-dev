@@ -11,7 +11,7 @@
 # Licence:     MIT
 # -------------------------------------------------------------------------------
 
-from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_creditcard(SpiderFootPlugin):
@@ -62,7 +62,8 @@ class sfp_creditcard(SpiderFootPlugin):
 
         for creditCard in set(creditCards):
             self.info(f"Found credit card number: {creditCard}")
-            evt = SpiderFootEvent("CREDIT_CARD_NUMBER", creditCard, self.__name__, event)
+            evt = SpiderFootEvent("CREDIT_CARD_NUMBER",
+                                  creditCard, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
             else:

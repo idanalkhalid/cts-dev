@@ -15,7 +15,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 sites = {
     # Search string to use, domain name the profile will sit on within
@@ -138,7 +138,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
         self.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['google_api_key'] == "" and self.opts['bing_api_key'] == "":
-            self.error("You enabled sfp_socialprofiles but did not set a Google or Bing API key!")
+            self.error(
+                "You enabled sfp_socialprofiles but did not set a Google or Bing API key!")
             self.errorState = True
             return
 
@@ -231,7 +232,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     if self.opts["tighten"] and self.keywords:
                         match = urllib.parse.unquote(match)
                         self.debug(
-                            "Tightening results to look for " + str(self.keywords)
+                            "Tightening results to look for " +
+                            str(self.keywords)
                         )
                         pres = self.sf.fetchUrl(
                             match,
@@ -254,7 +256,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             if not found:
                                 continue
 
-                    self.info("Social Media Profile found at " + site + ": " + match)
+                    self.info("Social Media Profile found at " +
+                              site + ": " + match)
                     match = urllib.parse.unquote(match)
                     evt = SpiderFootEvent(
                         "SOCIAL_MEDIA", site + ": <SFURL>" + match + "</SFURL>", self.__name__, event

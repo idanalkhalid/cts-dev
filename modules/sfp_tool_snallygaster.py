@@ -16,7 +16,7 @@ import json
 import os.path
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
+from cts import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
 
 
 class sfp_tool_snallygaster(SpiderFootPlugin):
@@ -89,7 +89,8 @@ class sfp_tool_snallygaster(SpiderFootPlugin):
         self.results[eventData] = True
 
         if not self.opts['snallygaster_path']:
-            self.error("You enabled sfp_tool_snallygaster but did not set a path to the tool!")
+            self.error(
+                "You enabled sfp_tool_snallygaster but did not set a path to the tool!")
             self.errorState = True
             return
 
@@ -121,7 +122,8 @@ class sfp_tool_snallygaster(SpiderFootPlugin):
             return
 
         if p.returncode != 0:
-            self.error(f"Unable to read onesixtyone output\nstderr: {stderr}\nstdout: {stdout}")
+            self.error(
+                f"Unable to read onesixtyone output\nstderr: {stderr}\nstdout: {stdout}")
             return
 
         if not stdout:
@@ -131,7 +133,8 @@ class sfp_tool_snallygaster(SpiderFootPlugin):
         try:
             result_json = json.loads(stdout)
         except Exception as e:
-            self.error(f"Could not parse snallygaster output as JSON: {e}\nstderr: {stderr}\nstdout: {stdout}")
+            self.error(
+                f"Could not parse snallygaster output as JSON: {e}\nstderr: {stderr}\nstdout: {stdout}")
             return
 
         if not result_json:

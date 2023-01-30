@@ -16,7 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_citadel(SpiderFootPlugin):
@@ -160,7 +160,8 @@ class sfp_citadel(SpiderFootPlugin):
 
         for site in message:
             self.info(f"Found Leak-Lookup entry for {eventData}: {site}")
-            evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{site}]", self.__name__, event)
+            evt = SpiderFootEvent("EMAILADDR_COMPROMISED",
+                                  f"{eventData} [{site}]", self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_citadel class

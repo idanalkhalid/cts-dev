@@ -13,7 +13,7 @@
 
 from netaddr import IPAddress
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_hosting(SpiderFootPlugin):

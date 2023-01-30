@@ -13,7 +13,7 @@
 
 import json
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_webserver(SpiderFootPlugin):
@@ -63,7 +63,8 @@ class sfp_webserver(SpiderFootPlugin):
         self.results[eventSource] = True
 
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
-            self.debug("Not collecting web server information for external sites.")
+            self.debug(
+                "Not collecting web server information for external sites.")
             return
 
         try:
@@ -71,17 +72,20 @@ class sfp_webserver(SpiderFootPlugin):
             if jdata is None:
                 return
         except Exception:
-            self.error("Received HTTP headers from another module in an unexpected format.")
+            self.error(
+                "Received HTTP headers from another module in an unexpected format.")
             return
 
         # Check location header for linked URLs
         if 'location' in jdata:
             if jdata['location'].startswith('http://') or jdata['location'].startswith('https://'):
                 if self.getTarget().matches(self.sf.urlFQDN(jdata['location'])):
-                    evt = SpiderFootEvent('LINKED_URL_INTERNAL', jdata['location'], self.__name__, event)
+                    evt = SpiderFootEvent(
+                        'LINKED_URL_INTERNAL', jdata['location'], self.__name__, event)
                     self.notifyListeners(evt)
                 else:
-                    evt = SpiderFootEvent('LINKED_URL_EXTERNAL', jdata['location'], self.__name__, event)
+                    evt = SpiderFootEvent(
+                        'LINKED_URL_EXTERNAL', jdata['location'], self.__name__, event)
                     self.notifyListeners(evt)
 
         # Check CSP header for linked URLs
@@ -90,10 +94,12 @@ class sfp_webserver(SpiderFootPlugin):
                 for string in directive.split(' '):
                     if string.startswith('http://') or string.startswith('https://'):
                         if self.getTarget().matches(self.sf.urlFQDN(string)):
-                            evt = SpiderFootEvent('LINKED_URL_INTERNAL', string, self.__name__, event)
+                            evt = SpiderFootEvent(
+                                'LINKED_URL_INTERNAL', string, self.__name__, event)
                             self.notifyListeners(evt)
                         else:
-                            evt = SpiderFootEvent('LINKED_URL_EXTERNAL', string, self.__name__, event)
+                            evt = SpiderFootEvent(
+                                'LINKED_URL_EXTERNAL', string, self.__name__, event)
                             self.notifyListeners(evt)
 
         # Could apply some smarts here, for instance looking for certain
@@ -103,7 +109,8 @@ class sfp_webserver(SpiderFootPlugin):
         server = jdata.get('server')
         if server:
             self.info(f"Found web server: {server} ({eventSource})")
-            evt = SpiderFootEvent("WEBSERVER_BANNER", server, self.__name__, event)
+            evt = SpiderFootEvent("WEBSERVER_BANNER",
+                                  server, self.__name__, event)
             self.notifyListeners(evt)
 
         cookies = jdata.get('set-cookie')
@@ -136,7 +143,8 @@ class sfp_webserver(SpiderFootPlugin):
             tech.append("PHP")
 
         for t in set(tech):
-            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", t, self.__name__, event)
+            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY",
+                                  t, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_webserver class

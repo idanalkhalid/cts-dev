@@ -13,7 +13,7 @@
 
 import json
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_googlesafebrowsing(SpiderFootPlugin):
@@ -212,7 +212,8 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         evt = SpiderFootEvent(
-            evtType, "Google SafeBrowsing [" + eventData + "]", self.__name__, event
+            evtType, "Google SafeBrowsing [" +
+            eventData + "]", self.__name__, event
         )
         self.notifyListeners(evt)
 

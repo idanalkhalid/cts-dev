@@ -16,7 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_numverify(SpiderFootPlugin):
@@ -160,15 +160,18 @@ class sfp_numverify(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         if data.get('country_code'):
-            country = SpiderFootHelpers.countryNameFromCountryCode(data.get('country_code'))
-            location = ', '.join([_f for _f in [data.get('location'), country] if _f])
+            country = SpiderFootHelpers.countryNameFromCountryCode(
+                data.get('country_code'))
+            location = ', '.join(
+                [_f for _f in [data.get('location'), country] if _f])
             evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
         else:
             self.debug("No location information found for " + eventData)
 
         if data.get('carrier'):
-            evt = SpiderFootEvent("PROVIDER_TELCO", data.get('carrier'), self.__name__, event)
+            evt = SpiderFootEvent("PROVIDER_TELCO", data.get(
+                'carrier'), self.__name__, event)
             self.notifyListeners(evt)
         else:
             self.debug("No carrier information found for " + eventData)

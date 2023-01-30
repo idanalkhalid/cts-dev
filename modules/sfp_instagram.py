@@ -12,7 +12,7 @@
 import json
 import re
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_instagram(SpiderFootPlugin):
@@ -86,13 +86,15 @@ class sfp_instagram(SpiderFootPlugin):
         # Parse profile URL
         try:
             network = eventData.split(": ")[0]
-            url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
+            url = eventData.split(": ")[1].replace(
+                "<SFURL>", "").replace("</SFURL>", "")
         except Exception as e:
             self.debug(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return
 
         if network != 'Instagram':
-            self.debug(f"Skipping social network profile, {url}, as not an Instagram profile")
+            self.debug(
+                f"Skipping social network profile, {url}, as not an Instagram profile")
             return
 
         # Retrieve profile
@@ -113,7 +115,8 @@ class sfp_instagram(SpiderFootPlugin):
             self.debug(f"{url} is not a valid Instagram profile")
             return
 
-        e = SpiderFootEvent('RAW_RIR_DATA', str(json_data), self.__name__, event)
+        e = SpiderFootEvent('RAW_RIR_DATA', str(
+            json_data), self.__name__, event)
         self.notifyListeners(e)
 
 # End of sfp_instagram class

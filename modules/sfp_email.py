@@ -11,7 +11,7 @@
 # Licence:     MIT
 # -------------------------------------------------------------------------------
 
-from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_email(SpiderFootPlugin):

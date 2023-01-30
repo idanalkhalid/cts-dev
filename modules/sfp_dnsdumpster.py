@@ -15,7 +15,7 @@ import re
 
 from bs4 import BeautifulSoup
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_dnsdumpster(SpiderFootPlugin):
@@ -59,9 +59,11 @@ class sfp_dnsdumpster(SpiderFootPlugin):
             useragent=self.opts.get("_useragent", "Spiderfoot")
         )
         if res1["code"] not in ["200"]:
-            self.error(f"Bad response code \"{res1['code']}\" from DNSDumpster")
+            self.error(
+                f"Bad response code \"{res1['code']}\" from DNSDumpster")
         else:
-            self.debug(f"Valid response code \"{res1['code']}\" from DNSDumpster")
+            self.debug(
+                f"Valid response code \"{res1['code']}\" from DNSDumpster")
         html = BeautifulSoup(str(res1["content"]), features="lxml")
         csrftoken = None
         csrfmiddlewaretoken = None
@@ -70,7 +72,8 @@ class sfp_dnsdumpster(SpiderFootPlugin):
                 k, v = cookie.split('=', 1)
                 if k == "csrftoken":
                     csrftoken = str(v)
-            csrfmiddlewaretoken = html.find("input", {"name": "csrfmiddlewaretoken"}).attrs.get("value", None)
+            csrfmiddlewaretoken = html.find(
+                "input", {"name": "csrfmiddlewaretoken"}).attrs.get("value", None)
         except Exception:
             pass
 
@@ -102,7 +105,8 @@ class sfp_dnsdumpster(SpiderFootPlugin):
             useragent=self.opts.get("_useragent", "Spiderfoot")
         )
         if res2["code"] not in ["200"]:
-            self.error(f"Bad response code \"{res2['code']}\" from DNSDumpster")
+            self.error(
+                f"Bad response code \"{res2['code']}\" from DNSDumpster")
             return ret
 
         html = BeautifulSoup(str(res2["content"]), features="lxml")
@@ -117,7 +121,8 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         if self.sf.resolveHost(host) or self.sf.resolveHost6(host):
             e = SpiderFootEvent("INTERNET_NAME", host, self.__name__, source)
         else:
-            e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, source)
+            e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED",
+                                host, self.__name__, source)
         self.notifyListeners(e)
 
     def handleEvent(self, event):
@@ -131,7 +136,8 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         if eventDataHash in self.results or \
                 (target.matches(query, includeParents=True) and not
                  target.matches(query, includeChildren=False)):
-            self.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
+            self.debug(
+                f"Skipping already-processed event, {event.eventType}, from {event.module}")
             return
         self.results[eventDataHash] = True
 

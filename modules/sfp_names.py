@@ -12,7 +12,7 @@
 
 import re
 
-from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_names(SpiderFootPlugin):
@@ -112,7 +112,8 @@ class sfp_names(SpiderFootPlugin):
                 return
 
         # Stage 1: Find things that look (very vaguely) like names
-        rx = re.compile(r"([A-Z][a-z�������������]+)\s+.?.?\s?([A-Z][�������������a-zA-Z\'\-]+)")
+        rx = re.compile(
+            r"([A-Z][a-z�������������]+)\s+.?.?\s?([A-Z][�������������a-zA-Z\'\-]+)")
         m = re.findall(rx, eventData)
         for r in m:
             # Start off each match as 0 points.
@@ -132,11 +133,13 @@ class sfp_names(SpiderFootPlugin):
 
             # If both words are not in the dictionary, add 75 points.
             if first not in self.d and second not in self.d:
-                self.debug(f"Both first and second names are not in the dictionary, so high chance of name: ({first}:{second}).")
+                self.debug(
+                    f"Both first and second names are not in the dictionary, so high chance of name: ({first}:{second}).")
                 p += 75
                 notindict = True
             else:
-                self.debug(first + " was found or " + second + " was found in dictionary.")
+                self.debug(first + " was found or " +
+                           second + " was found in dictionary.")
 
             # If the first word is a known popular first name, award 50 points.
             if first in self.n:

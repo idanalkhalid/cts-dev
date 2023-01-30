@@ -15,7 +15,7 @@ import random
 import threading
 import time
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_azureblobstorage(SpiderFootPlugin):
@@ -71,7 +71,8 @@ class sfp_azureblobstorage(SpiderFootPlugin):
         return ["CLOUD_STORAGE_BUCKET"]
 
     def checkSite(self, url):
-        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
+        res = self.sf.fetchUrl(
+            url, timeout=10, useragent="SpiderFoot", noLog=True)
 
         if res['code']:
             with self.lock:
@@ -147,7 +148,8 @@ class sfp_azureblobstorage(SpiderFootPlugin):
         if eventName == "LINKED_URL_EXTERNAL":
             if ".blob.core.windows.net" in eventData:
                 b = self.sf.urlFQDN(eventData)
-                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
+                evt = SpiderFootEvent(
+                    "CLOUD_STORAGE_BUCKET", b, self.__name__, event)
                 self.notifyListeners(evt)
             return
 
@@ -170,7 +172,8 @@ class sfp_azureblobstorage(SpiderFootPlugin):
         # Batch the scans
         ret = self.batchSites(urls)
         for b in ret:
-            evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
+            evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET",
+                                  b, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_azureblobstorage class

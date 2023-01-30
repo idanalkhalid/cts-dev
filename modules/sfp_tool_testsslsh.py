@@ -18,7 +18,7 @@ import tempfile
 from netaddr import IPNetwork
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
+from cts import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
 
 
 class sfp_tool_testsslsh(SpiderFootPlugin):
@@ -91,7 +91,8 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
             return
 
         if not self.opts['testsslsh_path']:
-            self.error("You enabled sfp_tool_testsslsh but did not set a path to the tool!")
+            self.error(
+                "You enabled sfp_tool_testsslsh but did not set a path to the tool!")
             self.errorState = True
             return
 
@@ -113,12 +114,14 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
             if eventName == "NETBLOCK_OWNER" and self.opts['netblockscan']:
                 net = IPNetwork(eventData)
                 if net.prefixlen < self.opts['netblockscanmax']:
-                    self.debug("Skipping scanning of " + eventData + ", too big.")
+                    self.debug("Skipping scanning of " +
+                               eventData + ", too big.")
                     return
                 for addr in net.iter_hosts():
                     targets.append(str(addr))
         except BaseException as e:
-            self.error(f"Strange netblock identified, unable to parse: {eventData} ({e})")
+            self.error(
+                f"Strange netblock identified, unable to parse: {eventData} ({e})")
             return
 
         # Don't look up stuff twice, check IP == IP here
@@ -131,7 +134,8 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                 for addr in self.results:
                     try:
                         if IPNetwork(eventData) in IPNetwork(addr):
-                            self.debug(f"Skipping {eventData} as already within a scanned range.")
+                            self.debug(
+                                f"Skipping {eventData} as already within a scanned range.")
                             return
                     except BaseException:
                         # self.results will also contain hostnames
@@ -169,9 +173,11 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
 
             if p.returncode != 0:
                 if "Unable to open a socket" in stdout:
-                    self.debug(f"Unable to read testssl.sh output for {target}: Unable to connect")
+                    self.debug(
+                        f"Unable to read testssl.sh output for {target}: Unable to connect")
                 else:
-                    self.error(f"Unable to read testssl.sh output for {target}: Internal error")
+                    self.error(
+                        f"Unable to read testssl.sh output for {target}: Internal error")
                 os.unlink(fname)
                 continue
 
@@ -185,7 +191,8 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                     result_json = json.loads(f.read())
                 os.unlink(fname)
             except Exception as e:
-                self.error(f"Could not parse testssl.sh output as JSON: {e}\nstderr: {stderr}\nstdout: {stdout}")
+                self.error(
+                    f"Could not parse testssl.sh output as JSON: {e}\nstderr: {stderr}\nstdout: {stdout}")
                 continue
 
             if not result_json:
@@ -206,13 +213,15 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                             continue
                         cves.append(cve)
                         etype, cvetext = self.sf.cveInfo(cve)
-                        evt = SpiderFootEvent(etype, cvetext, self.__name__, event)
+                        evt = SpiderFootEvent(
+                            etype, cvetext, self.__name__, event)
                         self.notifyListeners(evt)
                 else:
                     if result['id'] in cves:
                         continue
                     cves.append(result['id'])
-                    evt = SpiderFootEvent("VULNERABILITY_GENERAL", f"{result['id']} ({result['finding']})", self.__name__, event)
+                    evt = SpiderFootEvent(
+                        "VULNERABILITY_GENERAL", f"{result['id']} ({result['finding']})", self.__name__, event)
                     self.notifyListeners(evt)
 
 # End of sfp_tool_testsslsh class

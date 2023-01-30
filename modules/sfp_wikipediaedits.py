@@ -18,7 +18,7 @@ import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_wikipediaedits(SpiderFootPlugin):
@@ -75,7 +75,8 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         }
 
         if self.opts['days_limit'] != "0":
-            dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['days_limit']))
+            dt = datetime.datetime.now() - \
+                datetime.timedelta(days=int(self.opts['days_limit']))
             params["year"] = dt.strftime("%Y")
             params["month"] = dt.strftime("%m")
 
@@ -86,7 +87,8 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         )
 
         if res['code'] in ["404", "403", "500"]:
-            self.debug(f"Unexpected response code {res['code']} from Wikipedia")
+            self.debug(
+                f"Unexpected response code {res['code']} from Wikipedia")
             return None
 
         if not res['content']:
@@ -129,7 +131,8 @@ class sfp_wikipediaedits(SpiderFootPlugin):
             return
 
         for link in data:
-            evt = SpiderFootEvent("WIKIPEDIA_PAGE_EDIT", link, self.__name__, event)
+            evt = SpiderFootEvent("WIKIPEDIA_PAGE_EDIT",
+                                  link, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_wikipediaedits class

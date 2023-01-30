@@ -1,0 +1,95 @@
+<%include file="HEADER.tmpl"/>
+<main class="container" >
+<h2 class="mt-5">User Management <img id="loader" src="/static/img/loader.gif" style="display: none;"></h2>
+
+% if need_license == 'no license':
+<div class='alert alert-danger'>
+      <h4>Activate</h4>
+      <p>You need a multi-user license to add more users. To invite your team to use ThreatPipes <a href="https://www.threatpipes.com/download">get a free license key here</a>.</p>
+</div>
+% elif need_license == 'not extended':
+<div class='alert alert-danger'>
+      <h4>Activate</h4>
+      <p>You need a multi-user license to add more users. To invite your team to use ThreatPipes <a href="https://www.threatpipes.com/download">get a free license key here</a>.</p>
+</div>
+% endif
+
+<div class="m10 float-right">
+    <a href="${docroot}/auth/userprofile" class='btn btn-primary'>Your profile</a>
+    <button data-title="Add New User" data-bs-toggle="modal" data-bs-target="#modal-create" class="btn btn-primary"><i class="bi bi-plus"></i></button>
+    
+</div>
+% if msg:
+<h4 style="color: red;">${msg}</h4>
+% endif
+<div class="user-table mt-5">
+  <table id="userlist" class="table table-bordered table-striped tablesorter">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Last Active</th>
+        <th class="text-center">Role</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      % for user in users:
+        <tr>
+          <td>${user[1]}</td>
+          <td>${user[5]}</td>
+          <td class="text-center"><span class="badge text-bg-secondary">${user[3]}</span></td>
+          <td class="text-center">
+            % if user[1] != username:
+              <a href="/auth/deleteuser?id=${user[0]}" data-original-title="Remove User" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+            % endif
+          </td>
+        </tr>
+      % endfor
+    </tbody>
+  </table>
+  <div class="m20">Total Users: <b>${users_count}</b></div>
+</div>
+
+<div class="modal fade" id="modal-create">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="/auth/createuser" method="POST">
+        <div class="modal-header">
+          <h4 class="modal-title">Create User</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input type="text" class="form-control" required name="username" id="username" placeholder="Enter username">
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input type="password" class="form-control" required name="password" id="password" placeholder="Password">
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Role</label>
+              <select class="form-select" name="role">
+                <option>Admin</option>
+                <option>Bisnis</option>
+                <option>Member</option>
+              </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(function() {
+    $("#userlist").DataTable();
+  });
+</script>
+    
+ </main>
+<%include file="FOOTER.tmpl"/>

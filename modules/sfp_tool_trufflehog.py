@@ -16,7 +16,7 @@ import json
 import os
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootPlugin, SpiderFootEvent
+from cts import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_tool_trufflehog(SpiderFootPlugin):
@@ -79,7 +79,8 @@ class sfp_tool_trufflehog(SpiderFootPlugin):
             return
 
         if not self.opts['trufflehog_path']:
-            self.error("You enabled sfp_tool_trufflehog but did not set a path to the tool!")
+            self.error(
+                "You enabled sfp_tool_trufflehog but did not set a path to the tool!")
             self.errorState = True
             return
 
@@ -95,7 +96,8 @@ class sfp_tool_trufflehog(SpiderFootPlugin):
         if eventName == "SOCIAL_MEDIA":
             if "github.com/" in eventData.lower() or "gitlab.com/" in eventData.lower() or "bitbucket.org/" in eventData.lower():
                 try:
-                    url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
+                    url = eventData.split(": ")[1].replace(
+                        "<SFURL>", "").replace("</SFURL>", "")
                 except BaseException:
                     self.debug("Unable to extract repository URL, skipping.")
                     return
@@ -152,7 +154,8 @@ class sfp_tool_trufflehog(SpiderFootPlugin):
             try:
                 rowjson = json.loads(row)
             except BaseException as e:
-                self.error(f"Could not parse trufflehog output as JSON: {row}\nException: {e}")
+                self.error(
+                    f"Could not parse trufflehog output as JSON: {row}\nException: {e}")
                 continue
 
             descr = "\n".join(
@@ -160,7 +163,8 @@ class sfp_tool_trufflehog(SpiderFootPlugin):
                 for k in rowjson
                 if k not in ["diff", "printDiff"]
             )
-            evt = SpiderFootEvent('PASSWORD_COMPROMISED', descr, self.__name__, event)
+            evt = SpiderFootEvent('PASSWORD_COMPROMISED',
+                                  descr, self.__name__, event)
             self.notifyListeners(evt)
 
         return

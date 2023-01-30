@@ -17,7 +17,7 @@ import tempfile
 from netaddr import IPNetwork
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
+from cts import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
 
 
 class sfp_tool_onesixtyone(SpiderFootPlugin):
@@ -71,7 +71,8 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
                 f.write(community.strip() + "\n")
             f.close()
         except BaseException as e:
-            self.error(f"Unable to write communities file ({self.communitiesFile}): {e}")
+            self.error(
+                f"Unable to write communities file ({self.communitiesFile}): {e}")
             self.errorState = True
 
     def watchedEvents(self):
@@ -99,7 +100,8 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
             return
 
         if not self.opts['onesixtyone_path']:
-            self.error("You enabled sfp_tool_onesixtyone but did not set a path to the tool!")
+            self.error(
+                "You enabled sfp_tool_onesixtyone but did not set a path to the tool!")
             self.errorState = True
             return
 
@@ -126,7 +128,8 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
                 for addr in net.iter_hosts():
                     targets.append(str(addr))
         except BaseException as e:
-            self.error(f"Strange netblock identified, unable to parse: {eventData} ({e})")
+            self.error(
+                f"Strange netblock identified, unable to parse: {eventData} ({e})")
             return
 
         # Don't look up stuff twice, check IP == IP here
@@ -137,7 +140,8 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
             # Might be a subnet within a subnet or IP within a subnet
             for addr in self.results:
                 if IPNetwork(eventData) in IPNetwork(addr):
-                    self.debug(f"Skipping {eventData} as already within a scanned range.")
+                    self.debug(
+                        f"Skipping {eventData} as already within a scanned range.")
                     return
 
         self.results[eventData] = True
@@ -162,7 +166,8 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
                 continue
 
             if p.returncode != 0:
-                self.error(f"Unable to read onesixtyone output\nstderr: {stderr}\nstdout: {stdout}")
+                self.error(
+                    f"Unable to read onesixtyone output\nstderr: {stderr}\nstdout: {stdout}")
                 continue
 
             if not stdout:
@@ -176,13 +181,16 @@ class sfp_tool_onesixtyone(SpiderFootPlugin):
                     continue
 
                 if target != eventData:
-                    srcevent = SpiderFootEvent("IP_ADDRESS", target, self.__name__, event)
+                    srcevent = SpiderFootEvent(
+                        "IP_ADDRESS", target, self.__name__, event)
                     self.notifyListeners(srcevent)
 
-                e = SpiderFootEvent('UDP_PORT_OPEN', f"{target}:161", self.__name__, srcevent)
+                e = SpiderFootEvent(
+                    'UDP_PORT_OPEN', f"{target}:161", self.__name__, srcevent)
                 self.notifyListeners(e)
 
-                e = SpiderFootEvent("UDP_PORT_OPEN_INFO", result, self.__name__, e)
+                e = SpiderFootEvent("UDP_PORT_OPEN_INFO",
+                                    result, self.__name__, e)
                 self.notifyListeners(e)
 
 # End of sfp_tool_onesixtyone class

@@ -1,0 +1,17 @@
+<%include file="HEADER.tmpl"/>
+<main class="container">
+    <div class="px-4 pt-2 my-3 text-center">
+        <h1 class="display-4 fw-bold">See Your Threat Landscape</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-3">C-Threatscore(CTS) gives a picture of threat landscape to your organization from it's threat score just one click</p>
+            <div class="justify-content-sm-center mb-3">
+                <div id="emailHelp" class="form-text justify-content-sm-center mb-1">Insert your organization digital identity(domain or IP Address) to be checked by CTS</div>
+                <input type="text" class="form-control" id="domain" aria-describedby="emailHelp" placeholder="Domain Name: e.g. example.com">
+            </div>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+                <button type="button" class="btn btn-primary btn-lg px-4 me-sm-3">Run Scan</button>
+            </div>
+        </div>
+    </div>
+</main>
+<%include file="FOOTER.tmpl"/>

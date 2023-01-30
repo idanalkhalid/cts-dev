@@ -16,7 +16,7 @@ import sys
 import json
 from subprocess import Popen, PIPE, TimeoutExpired
 
-from spiderfoot import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
+from cts import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
 
 
 class sfp_tool_wappalyzer(SpiderFootPlugin):
@@ -76,7 +76,8 @@ class sfp_tool_wappalyzer(SpiderFootPlugin):
             return
 
         if not self.opts['wappalyzer_path']:
-            self.error("You enabled sfp_tool_wappalyzer but did not set a path to the tool!")
+            self.error(
+                "You enabled sfp_tool_wappalyzer but did not set a path to the tool!")
             self.errorState = True
             return
 

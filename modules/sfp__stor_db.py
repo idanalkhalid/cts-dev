@@ -11,7 +11,7 @@
 # Licence:     MIT
 # -------------------------------------------------------------------------------
 
-from spiderfoot import SpiderFootPlugin
+from cts import SpiderFootPlugin
 
 
 class sfp__stor_db(SpiderFootPlugin):
@@ -25,7 +25,8 @@ class sfp__stor_db(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'maxstorage': 1024,  # max bytes for any piece of info stored (0 = unlimited)
+        # max bytes for any piece of info stored (0 = unlimited)
+        'maxstorage': 1024,
         '_store': True
     }
 
@@ -54,7 +55,8 @@ class sfp__stor_db(SpiderFootPlugin):
         if self.opts['maxstorage'] != 0:
             if len(sfEvent.data) > self.opts['maxstorage']:
                 self.debug("Storing an event: " + sfEvent.eventType)
-                self.__sfdb__.scanEventStore(self.getScanId(), sfEvent, self.opts['maxstorage'])
+                self.__sfdb__.scanEventStore(
+                    self.getScanId(), sfEvent, self.opts['maxstorage'])
                 return
 
         self.debug("Storing an event: " + sfEvent.eventType)

@@ -29,14 +29,15 @@ from cherrypy.lib import auth_digest
 from sflib import SpiderFoot
 from sfscan import startSpiderFootScanner
 from sfwebui import SpiderFootWebUi
-from spiderfoot import SpiderFootHelpers
-from spiderfoot import SpiderFootDb
-from spiderfoot import SpiderFootCorrelator
-from spiderfoot.logger import logListenerSetup, logWorkerSetup
-from spiderfoot import __version__
+from cts import SpiderFootHelpers
+from cts import SpiderFootDb
+from cts import SpiderFootCorrelator
+from cts.logger import logListenerSetup, logWorkerSetup
+from cts import __version__
 
 scanId = None
 dbh = None
+development_debug = False
 
 
 def main() -> None:
@@ -56,7 +57,8 @@ def main() -> None:
         '_maxthreads': 3,  # Number of modules to run concurrently
         '__logging': True,  # Logging in general
         '__outputfilter': None,  # Event types to filter from modules' output
-        '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
+        # User-Agent to use for HTTP requests
+        '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',
         '_dnsserver': '',  # Override the default resolver
         '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
         '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
@@ -64,7 +66,8 @@ def main() -> None:
         '_genericusers': ",".join(SpiderFootHelpers.usernamesFromWordlists(['generic-usernames'])),
         '__database': f"{SpiderFootHelpers.dataPath()}/spiderfoot.db",
         '__modules__': None,  # List of modules. Will be set after start-up.
-        '__correlationrules__': None,  # List of correlation rules. Will be set after start-up.
+        # List of correlation rules. Will be set after start-up.
+        '__correlationrules__': None,
         '_socks1type': '',
         '_socks2addr': '',
         '_socks3port': '',
@@ -86,37 +89,57 @@ def main() -> None:
         '_socks3port': 'SOCKS Server TCP Port. Usually 1080 for 4/5, 8080 for HTTP and 9050 for TOR.',
         '_socks4user': 'SOCKS Username. Valid only for SOCKS4 and SOCKS5 servers.',
         '_socks5pwd': "SOCKS Password. Valid only for SOCKS5 servers.",
-        '_modulesenabled': "Modules enabled for the scan."  # This is a hack to get a description for an option not actually available.
+        # This is a hack to get a description for an option not actually available.
+        '_modulesenabled': "Modules enabled for the scan."
     }
 
     # Legacy way to run the server
     args = None
-    p = argparse.ArgumentParser(description=f"SpiderFoot {__version__}: Open Source Intelligence Automation.")
-    p.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
+    p = argparse.ArgumentParser(
+        description=f"SpiderFoot {__version__}: Open Source Intelligence Automation.")
+    p.add_argument("-d", "--debug", action='store_true',
+                   help="Enable debug output.")
     p.add_argument("-l", metavar="IP:port", help="IP and port to listen on.")
-    p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
-    p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
-    p.add_argument("-C", "--correlate", metavar="scanID", help="Run correlation rules against a scan ID.")
+    p.add_argument("-m", metavar="mod1,mod2,...",
+                   type=str, help="Modules to enable.")
+    p.add_argument("-M", "--modules", action='store_true',
+                   help="List available modules.")
+    p.add_argument("-C", "--correlate", metavar="scanID",
+                   help="Run correlation rules against a scan ID.")
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
-    p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect (modules selected automatically).")
-    p.add_argument("-u", choices=["all", "footprint", "investigate", "passive"], type=str, help="Select modules automatically by use case")
-    p.add_argument("-T", "--types", action='store_true', help="List available event types.")
-    p.add_argument("-o", choices=["tab", "csv", "json"], type=str, help="Output format. Tab is default.")
-    p.add_argument("-H", action='store_true', help="Don't print field headers, just data.")
+    p.add_argument("-t", metavar="type1,type2,...", type=str,
+                   help="Event types to collect (modules selected automatically).")
+    p.add_argument("-u", choices=["all", "footprint", "investigate", "passive"],
+                   type=str, help="Select modules automatically by use case")
+    p.add_argument("-T", "--types", action='store_true',
+                   help="List available event types.")
+    p.add_argument("-o", choices=["tab", "csv", "json"],
+                   type=str, help="Output format. Tab is default.")
+    p.add_argument("-H", action='store_true',
+                   help="Don't print field headers, just data.")
     p.add_argument("-n", action='store_true', help="Strip newlines from data.")
-    p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
-    p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
-    p.add_argument("-D", metavar='DELIMITER', type=str, help="Delimiter to use for CSV output. Default is ,.")
-    p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
-    p.add_argument("-F", metavar="type1,type2,...", type=str, help="Show only a set of event types, comma-separated.")
+    p.add_argument("-r", action='store_true',
+                   help="Include the source data field in tab/csv output.")
+    p.add_argument("-S", metavar="LENGTH", type=int,
+                   help="Maximum data length to display. By default, all data is shown.")
+    p.add_argument("-D", metavar='DELIMITER', type=str,
+                   help="Delimiter to use for CSV output. Default is ,.")
+    p.add_argument("-f", action='store_true',
+                   help="Filter out other event types that weren't requested with -t.")
+    p.add_argument("-F", metavar="type1,type2,...", type=str,
+                   help="Show only a set of event types, comma-separated.")
     p.add_argument("-x", action='store_true', help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.")
-    p.add_argument("-q", action='store_true', help="Disable logging. This will also hide errors!")
-    p.add_argument("-V", "--version", action='store_true', help="Display the version of SpiderFoot and exit.")
-    p.add_argument("-max-threads", type=int, help="Max number of modules to run concurrently.")
+    p.add_argument("-q", action='store_true',
+                   help="Disable logging. This will also hide errors!")
+    p.add_argument("-V", "--version", action='store_true',
+                   help="Display the version of SpiderFoot and exit.")
+    p.add_argument("-max-threads", type=int,
+                   help="Max number of modules to run concurrently.")
     args = p.parse_args()
 
     if args.version:
-        print(f"SpiderFoot {__version__}: Open Source Intelligence Automation.")
+        print(
+            f"SpiderFoot {__version__}: Open Source Intelligence Automation.")
         sys.exit(0)
 
     if args.max_threads:
@@ -141,7 +164,8 @@ def main() -> None:
     # Load each module in the modules directory with a .py extension
     try:
         mod_dir = os.path.dirname(os.path.abspath(__file__)) + '/modules/'
-        sfModules = SpiderFootHelpers.loadModulesAsDict(mod_dir, ['sfp_template.py'])
+        sfModules = SpiderFootHelpers.loadModulesAsDict(
+            mod_dir, ['sfp_template.py'])
     except BaseException as e:
         log.critical(f"Failed to load modules: {e}", exc_info=True)
         sys.exit(-1)
@@ -153,8 +177,10 @@ def main() -> None:
     # Load each correlation rule in the correlations directory with
     # a .yaml extension
     try:
-        correlations_dir = os.path.dirname(os.path.abspath(__file__)) + '/correlations/'
-        correlationRulesRaw = SpiderFootHelpers.loadCorrelationRulesRaw(correlations_dir, ['template.yaml'])
+        correlations_dir = os.path.dirname(
+            os.path.abspath(__file__)) + '/correlations/'
+        correlationRulesRaw = SpiderFootHelpers.loadCorrelationRulesRaw(
+            correlations_dir, ['template.yaml'])
     except BaseException as e:
         log.critical(f"Failed to load correlation rules: {e}", exc_info=True)
         sys.exit(-1)
@@ -169,13 +195,15 @@ def main() -> None:
     # Sanity-check the rules and parse them
     sfCorrelationRules = list()
     if not correlationRulesRaw:
-        log.error(f"No correlation rules found in correlations directory: {correlations_dir}")
+        log.error(
+            f"No correlation rules found in correlations directory: {correlations_dir}")
     else:
         try:
             correlator = SpiderFootCorrelator(dbh, correlationRulesRaw)
             sfCorrelationRules = correlator.get_ruleset()
         except Exception as e:
-            log.critical(f"Failure initializing correlation rules: {e}", exc_info=True)
+            log.critical(
+                f"Failure initializing correlation rules: {e}", exc_info=True)
             sys.exit(-1)
 
     # Add modules and correlation rules to sfConfig so they can be used elsewhere
@@ -184,15 +212,19 @@ def main() -> None:
 
     if args.correlate:
         if not correlationRulesRaw:
-            log.error("Unable to perform correlations as no correlation rules were found.")
+            log.error(
+                "Unable to perform correlations as no correlation rules were found.")
             sys.exit(-1)
 
         try:
-            log.info(f"Running {len(correlationRulesRaw)} correlation rules against scan, {args.correlate}.")
-            corr = SpiderFootCorrelator(dbh, correlationRulesRaw, args.correlate)
+            log.info(
+                f"Running {len(correlationRulesRaw)} correlation rules against scan, {args.correlate}.")
+            corr = SpiderFootCorrelator(
+                dbh, correlationRulesRaw, args.correlate)
             corr.run_correlations()
         except Exception as e:
-            log.critical(f"Unable to run correlation rules: {e}", exc_info=True)
+            log.critical(
+                f"Unable to run correlation rules: {e}", exc_info=True)
             sys.exit(-1)
         sys.exit(0)
 
@@ -250,7 +282,8 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
     sf = SpiderFoot(sfConfig)
 
     if not args.s:
-        log.error("You must specify a target when running in scan mode. Try --help for guidance.")
+        log.error(
+            "You must specify a target when running in scan mode. Try --help for guidance.")
         sys.exit(-1)
 
     if args.x and not args.t:
@@ -258,7 +291,8 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
         sys.exit(-1)
 
     if args.x and args.m:
-        log.error("-x can only be used with -t and not with -m. Use --help for guidance.")
+        log.error(
+            "-x can only be used with -t and not with -m. Use --help for guidance.")
         sys.exit(-1)
 
     if args.r and (args.o and args.o not in ["tab", "csv"]):
@@ -290,7 +324,8 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
 
     modlist = list()
     if not args.t and not args.m and not args.u:
-        log.warning("You didn't specify any modules, types or use case, so all modules will be enabled.")
+        log.warning(
+            "You didn't specify any modules, types or use case, so all modules will be enabled.")
         for m in list(sfModules.keys()):
             if "__" in m:
                 continue
@@ -322,7 +357,8 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
 
     # Select modules if the user selected usercase
     if args.u:
-        usecase = args.u[0].upper() + args.u[1:]  # Make the first Letter Uppercase
+        # Make the first Letter Uppercase
+        usecase = args.u[0].upper() + args.u[1:]
         for mod in sfConfig['__modules__']:
             if usecase == 'All' or usecase in sfConfig['__modules__'][mod]['group']:
                 modlist.append(mod)
@@ -345,7 +381,8 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
         sfp__stor_stdout_opts['_showonlyrequested'] = True
     if args.o:
         if args.o not in ["tab", "csv", "json"]:
-            log.error("Invalid output format selected. Must be 'tab', 'csv' or 'json'.")
+            log.error(
+                "Invalid output format selected. Must be 'tab', 'csv' or 'json'.")
             sys.exit(-1)
         sfp__stor_stdout_opts['_format'] = args.o
     if args.t:
@@ -413,12 +450,14 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
 
         if args.r:
             if delim == "\t":
-                headers = '{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data")
+                headers = '{0:30}{1}{2:45}{3}{4}{5}{6}'.format(
+                    "Source", delim, "Type", delim, "Source Data", delim, "Data")
             else:
                 headers = delim.join(["Source", "Type", "Source Data", "Data"])
         else:
             if delim == "\t":
-                headers = '{0:30}{1}{2:45}{3}{4}'.format("Source", delim, "Type", delim, "Data")
+                headers = '{0:30}{1}{2:45}{3}{4}'.format(
+                    "Source", delim, "Type", delim, "Data")
             else:
                 headers = delim.join(["Source", "Type", "Data"])
 
@@ -428,7 +467,8 @@ def start_scan(sfConfig: dict, sfModules: dict, args, loggingQueue) -> None:
     scanName = target
     scanId = SpiderFootHelpers.genScanInstanceId()
     try:
-        p = mp.Process(target=startSpiderFootScanner, args=(loggingQueue, scanName, scanId, target, targetType, modlist, cfg))
+        p = mp.Process(target=startSpiderFootScanner, args=(
+            loggingQueue, scanName, scanId, target, targetType, modlist, cfg))
         p.daemon = True
         p.start()
     except BaseException as e:
@@ -466,10 +506,20 @@ def start_web_server(sfWebUiConfig: dict, sfConfig: dict, loggingQueue=None) -> 
     web_root = sfWebUiConfig.get('root', '/')
     cors_origins = sfWebUiConfig.get('cors_origins', [])
 
+    if development_debug:
+        environment = ''
+    else:
+        environment = 'production'
+
+    d = cherrypy.dispatch.RoutesDispatcher()
+    d.connect('newscanmember', 'member/newscan',
+              controller=SpiderFootWebUi, action='newscanMember')
+
     cherrypy.config.update({
         'log.screen': False,
         'server.socket_host': web_host,
-        'server.socket_port': int(web_port)
+        'server.socket_port': int(web_port),
+        'environment': environment,
     })
 
     log.info(f"Starting web server at {web_host}:{web_port} ...")
@@ -483,7 +533,7 @@ def start_web_server(sfWebUiConfig: dict, sfConfig: dict, loggingQueue=None) -> 
         '/static': {
             'tools.staticdir.on': True,
             'tools.staticdir.dir': 'static',
-            'tools.staticdir.root': f"{os.path.dirname(os.path.abspath(__file__))}/spiderfoot"
+            'tools.staticdir.root': f"{os.path.dirname(os.path.abspath(__file__))}/cts"
         }
     }
 
@@ -502,14 +552,16 @@ def start_web_server(sfWebUiConfig: dict, sfConfig: dict, loggingQueue=None) -> 
                 continue
 
             if ':' not in line:
-                log.error("Incorrect format of passwd file, must be username:password on each line.")
+                log.error(
+                    "Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
 
             u = line.strip().split(":")[0]
             p = ':'.join(line.strip().split(":")[1:])
 
             if not u or not p:
-                log.error("Incorrect format of passwd file, must be username:password on each line.")
+                log.error(
+                    "Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
 
             secrets[u] = p
@@ -576,7 +628,8 @@ def start_web_server(sfWebUiConfig: dict, sfConfig: dict, loggingQueue=None) -> 
     # Disable auto-reloading of content
     cherrypy.engine.autoreload.unsubscribe()
 
-    cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig, loggingQueue), script_name=web_root, config=conf)
+    cherrypy.quickstart(SpiderFootWebUi(
+        sfWebUiConfig, sfConfig, loggingQueue), script_name=web_root, config=conf)
 
 
 def handle_abort(signal, frame) -> None:
@@ -609,10 +662,13 @@ if __name__ == '__main__':
     # TODO: remove this after a few releases (added in 3.5 pre-release 2021-09-05)
     from pathlib import Path
     if os.path.exists('spiderfoot.db'):
-        print(f"ERROR: spiderfoot.db file exists in {os.path.dirname(__file__)}")
+        print(
+            f"ERROR: spiderfoot.db file exists in {os.path.dirname(__file__)}")
         print("SpiderFoot no longer supports loading the spiderfoot.db database from the application directory.")
-        print(f"The database is now loaded from your home directory: {Path.home()}/.spiderfoot/spiderfoot.db")
-        print(f"This message will go away once you move or remove spiderfoot.db from {os.path.dirname(__file__)}")
+        print(
+            f"The database is now loaded from your home directory: {Path.home()}/.spiderfoot/spiderfoot.db")
+        print(
+            f"This message will go away once you move or remove spiderfoot.db from {os.path.dirname(__file__)}")
         sys.exit(-1)
 
     # TODO: remove this after a few releases (added in 3.5 pre-release 2021-09-05)
@@ -620,8 +676,10 @@ if __name__ == '__main__':
     if os.path.exists('passwd'):
         print(f"ERROR: passwd file exists in {os.path.dirname(__file__)}")
         print("SpiderFoot no longer supports loading credentials from the application directory.")
-        print(f"The passwd file is now loaded from your home directory: {Path.home()}/.spiderfoot/passwd")
-        print(f"This message will go away once you move or remove passwd from {os.path.dirname(__file__)}")
+        print(
+            f"The passwd file is now loaded from your home directory: {Path.home()}/.spiderfoot/passwd")
+        print(
+            f"This message will go away once you move or remove passwd from {os.path.dirname(__file__)}")
         sys.exit(-1)
 
     main()

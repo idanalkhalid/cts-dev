@@ -1,0 +1,173 @@
+<%include file="HEADER.tmpl"/>
+<main class="container" id="mainbody" >
+<h2 class="mt-5">Scan profiles <img id="loader" src="${docroot}/static/img/loader.gif" style="display: none;"></h2>
+% if scanprofiles:
+<div class="float-right small-group">
+  <button rel='tooltip' data-title='Delete Selected' id='btn-delete' class='btn btn-danger' onClick='deleteSelected()'><i class='far fa-trash-alt white-icon'></i> Delete Selected</button>
+  <button data-title="Add New Scan Profile" data-bs-toggle="modal" data-bs-target="#modal" id="create-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Scan Profile</button>
+</div>
+<div class="user-table mt-5">
+    <table id="scProfilesTable" class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th width="5%"></th>
+          <th>Name</th>
+          <th>Slug</th>
+          <th>Description</th>
+          <th>Modules</th>
+          <th class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        % for scanprofile in scanprofiles:
+          <tr>
+            <td><input type="checkbox" id="cb_${scanprofile[2]}"></td>
+            <td><a href="${docroot}/scanprofile/${scanprofile[2]}">${scanprofile[1]}</a></td>
+            <td>${scanprofile[2]}</td>
+            <td>${scanprofile[3]}</td>
+            <td>${scanprofile[4]}</td>
+            <td class="text-center" style="white-space:normal ">
+              <a class="btn btn-danger" rel="tooltip" title="Delete Profile" href="${docroot}/scanprofiledelete?idset=${scanprofile[2]}">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+        % endfor
+      </tbody>
+    </table>
+</div>
+% else:
+  <div class="alert alert-info"><h4>No scan profiles</h4></div>
+  <button rel="tooltip" data-bs-toggle="modal" data-bs-target="#modal" href="javascript:void(0)" data-title="Create Profile" id="btn-add" class="btn btn-success">Create Profile</button>
+% endif
+
+<div class="modal fade" id="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="modal_title">Create Scan Profile</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </button>
+      </div>
+      <form id="modal_form" action="${docroot}/scanprofilecreate" method="POST">
+      <div class="modal-body" >
+          <div class="mb-3">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" required name="name" id="name" placeholder="Enter name">
+          </div>
+          <div class="mb-3">
+            <label for="slug">Profile slug</label>
+            <input type="text" class="form-control" required name="slug" id="slug" placeholder="Enter slug">
+          </div>
+          <div class="mb-3">
+            <label for="name">Description</label>
+            <input type="text" class="form-control" required name="description" id="description" placeholder="Enter description">
+          </div>
+          <div class="mb-3">
+            <input type='hidden' id='modules' name='modules' value=''>
+            <label for="name">Modules</label>
+            <%
+            modlist = dict()
+            for item in modules:
+                modlist[modules[item]['name']] = item
+            %>
+            <table id="moduleList" class="table table-bordered table-striped tablesorter">
+              <thead>
+                <tr>
+                  <th>Modules</th>
+                </tr>
+              </thead>
+              <tbody>
+                % for it in sorted(modlist, key=lambda v: v.upper()):
+                    <% item = modlist[it] %>
+                    % if item != "tpp__stor_db" and item != "tpp__stor_stdout":
+                        <tr><td><div class="form-check"><input type="checkbox" class="module form-check-input" id="module_${item}">  <label class="form-check-label" for="module_${item}">${modules[item]['name']}</label></div></td></tr>
+                    % endif
+                % endfor
+              </tbody>
+
+            </table>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" id="modal_submit" class="btn btn-success">Create</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  $(document).ready(function () {
+    var chkboxes = $('input[id*=cb_]');
+    $('#scProfilesTable').DataTable();
+    $("#moduleList").DataTable({
+      "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
+    });
+    chkboxes.click(function (e) {
+      if (!lastChecked) {
+        lastChecked = this;
+        return;
+      }
+
+      if (e.shiftKey) {
+        var start = chkboxes.index(this);
+        var end = chkboxes.index(lastChecked);
+
+        chkboxes.slice(Math.min(start, end), Math.max(start, end) + 1).prop('checked', lastChecked.checked);
+
+      }
+
+      lastChecked = this;
+    });
+  });
+
+
+  $("#modal_form").submit(function( event ) {
+    list = "";
+    $("[id^=module_]").each(function () {
+      if ($(this).is(":checked")) {
+        list += $(this).attr('id') + ",";
+      }
+    });
+    if (list == "") {
+      alert("Select at least one module")
+      event.preventDefault();
+    }
+    if (/\s/g.test($("#slug").val())) {
+      alert("Slug must not contain spaces")
+      event.preventDefault();
+    }
+    console.log(list);
+    $("#modules").val(list);
+  });
+
+  function getSelected() {
+    ids = [];
+    $("input[id*=cb_]").each(function (i, obj) {
+      if (obj.checked) {
+        ids[ids.length] = obj.id.replace("cb_", "");
+      }
+    });
+
+    if (ids.length == 0) {
+      alert("You need to select at least one scan profile.");
+      return false;
+    }
+
+    return ids;
+  }
+
+  function deleteSelected() {
+    ids = getSelected();
+
+    if (ids != false) {
+      window.location.href = '${docroot}/scanprofiledelete?idset=' + ids.join(',');
+    }
+  }
+
+</script>
+</main>
+<%include file="FOOTER.tmpl"/>

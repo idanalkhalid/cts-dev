@@ -13,7 +13,7 @@
 
 import json
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from cts import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_ipstack(SpiderFootPlugin):
@@ -104,7 +104,8 @@ class sfp_ipstack(SpiderFootPlugin):
         try:
             hostip = json.loads(res['content'])
             if 'success' in hostip and hostip['success'] is False:
-                self.error("Invalid ipstack.com API key or usage limits exceeded.")
+                self.error(
+                    "Invalid ipstack.com API key or usage limits exceeded.")
                 self.errorState = True
                 return
         except Exception as e:
