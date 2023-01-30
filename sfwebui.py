@@ -1035,7 +1035,7 @@ class SpiderFootWebUi:
 
             dbh = SpiderFootDb(self.config)
 
-            modules = modules.replace('module_', '').replace(',', ', ')[:-2]
+            modules = modules.replace('module_', '')[:-2]
 
             scan_profile = dbh.scanProfileInstanceGet(slug)
             if scan_profile:
@@ -1572,12 +1572,12 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     # def startscan(self: 'SpiderFootWebUi', scanname: str, scantarget: str, modulelist: str, typelist: str, usecase: str, scanprofile: str, created_by: str) -> str:
-    def startscan(self, scanname, scantarget, modulelist, typelist, usecase, scanprofile, created_by=None, scan_type='basic', stream=False):
+    def startscan(self, scanname, scantarget, modulelist, typelist, usecase, scanprofile=None, created_by=None, scan_type='basic', stream=False):
         self.log.info(modulelist)
         self.log.info(typelist)
-        self.log.info(scanprofile)
+
         self.log.info(usecase)
-        self.log.info(created_by)
+        self.log.info("===============================")
         """Initiate a scan.
 
         Args:
@@ -1638,9 +1638,12 @@ class SpiderFootWebUi:
         sf = SpiderFoot(cfg)
 
         modlist = list()
+        # User selected custom profile
+        if scanprofile:
+            modlist = scanprofile.split(',')
 
         # User selected modules
-        if modulelist:
+        if len(modlist) == 0 and modulelist:
             modlist = modulelist.replace('module_', '').split(',')
 
         # User selected types
@@ -1693,6 +1696,7 @@ class SpiderFootWebUi:
             scantarget = scantarget.lower()
 
         # Start running a new scan
+        self.log.info(modlist)
         scanId = SpiderFootHelpers.genScanInstanceId()
         try:
             p = mp.Process(target=startSpiderFootScanner, args=(

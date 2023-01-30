@@ -109,7 +109,7 @@
                         <tbody>
                             % if scanprofiles:
                                 % for scanprofile in scanprofiles:
-                                    <tr><td><input type='radio' name='scanprofile' value='${scanprofile[2]}' id="${scanprofile[2]}"></td><td>${scanprofile[1]}</td><td>${scanprofile[2]}</td><td>${scanprofile[3]}</td><td>${scanprofile[4]}</td></tr>
+                                    <tr><td><input type='radio' name='scanprofile' value='${scanprofile[4]}' id="${scanprofile[2]}"></td><td>${scanprofile[1]}</td><td>${scanprofile[2]}</td><td>${scanprofile[3]}</td><td>${scanprofile[4]}</td></tr>
                                 % endfor
                             % else:
                                 <input type='hidden' name='scanprofile' value='' id="emptyscanprofile">
@@ -122,7 +122,6 @@
                     <div class="controls">
                         <input type=hidden id='modulelist' name='modulelist' value=''>
                         <input type=hidden id='typelist' name='typelist' value=''>
-                        <input type='hidden' name='scanprofile' value='' id="nullscanprifile">
                         <button id="btn-run-scan" class="btn btn-danger">Run Scan Now</button>
                     </div>
                 </div>
