@@ -1838,7 +1838,9 @@ class SpiderFootWebUi:
             list: scan list
         """
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanInstanceList()
+
+        username = cherrypy.session.get(SESSION_KEY, None)
+        data = dbh.scanInstanceList(username)
         retdata = []
 
         for row in data:

@@ -214,12 +214,7 @@ function showlisttable(types, filter, data) {
         }
         table += "<td class='text-center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
         table += "<td class='text-center'>" + data[i][7] + "</td>";
-        table += "<td class='text-center'>";
-        table += "<span class='badge bg-danger'>" + data[i][8]['HIGH'] + "</span> ";
-        table += "<span class='badge bg-warning'>" + data[i][8]['MEDIUM'] + "</span> ";
-        table += "<span class='badge bg-info'>" + data[i][8]['LOW'] + "</span> ";
-        table += "<span class='badge bg-success'>" + data[i][8]['INFO'] + "</span> ";
-        table += "</td>";
+        table += "<td class='text-center'>" + data[i][9] + "</td>";
         table += "<td class='text-center'>";
         if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED" || data[i][6] == "INITIALIZING") {
             table += "<a rel='tooltip' title='Stop Scan' href='javascript:stopScan(\"" + data[i][0] + "\");'><i class='bi bi-stop text-muted'></i></a>";

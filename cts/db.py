@@ -1637,7 +1637,7 @@ class SpiderFootDb:
                 raise IOError(
                     f"SQL error encountered when storing event data ({self.dbh})") from e
 
-    def scanInstanceList(self) -> list:
+    def scanInstanceList(self, username) -> list:
         """List all previously run scans.
 
         Returns:
@@ -1650,20 +1650,36 @@ class SpiderFootDb:
         # SQLite doesn't support OUTER JOINs, so we need a work-around that
         # does a UNION of scans with results and scans without results to
         # get a complete listing.
-        qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
-            ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.type), i.created_by\
-            FROM tbl_scan_instance i, tbl_scan_results r WHERE i.guid = r.scan_instance_id \
-            AND r.type <> 'ROOT' GROUP BY i.guid \
-            UNION ALL \
-            SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
-            ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, '0', i.created_by \
-            FROM tbl_scan_instance i  WHERE i.guid NOT IN ( \
-            SELECT distinct scan_instance_id FROM tbl_scan_results WHERE type <> 'ROOT') \
-            ORDER BY started DESC"
+        if (username == 'admin'):
+            qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
+                ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.type), i.created_by\
+                FROM tbl_scan_instance i, tbl_scan_results r WHERE i.guid = r.scan_instance_id \
+                AND r.type <> 'ROOT' GROUP BY i.guid \
+                UNION ALL \
+                SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
+                ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, '0', i.created_by \
+                FROM tbl_scan_instance i  WHERE i.guid NOT IN ( \
+                SELECT distinct scan_instance_id FROM tbl_scan_results WHERE type <> 'ROOT') \
+                ORDER BY started DESC"
+        else:
+            qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
+                ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.type), i.created_by\
+                FROM tbl_scan_instance i, tbl_scan_results r WHERE i.guid = r.scan_instance_id \
+                AND r.type <> 'ROOT' AND i.created_by = ? GROUP BY i.guid \
+                UNION ALL \
+                SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
+                ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, '0', i.created_by \
+                FROM tbl_scan_instance i  WHERE i.created_by = ? AND i.guid NOT IN ( \
+                SELECT distinct scan_instance_id FROM tbl_scan_results WHERE type <> 'ROOT') \
+                ORDER BY started DESC"
+            qvars = [username, username]
 
         with self.dbhLock:
             try:
-                self.dbh.execute(qry)
+                if (username == 'admin'):
+                    self.dbh.execute(qry)
+                else:
+                    self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
                 raise IOError(
