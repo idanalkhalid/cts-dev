@@ -16,7 +16,7 @@ import sys
 import json
 import tempfile
 from netaddr import IPNetwork
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from cts import SpiderFootPlugin, SpiderFootEvent, SpiderFootHelpers
 
@@ -160,11 +160,11 @@ class sfp_tool_testsslsh(SpiderFootPlugin):
                 "5",
                 "--jsonfile",
                 fname,
-                target
+                target	
             ]
             try:
                 p = Popen(args, stdout=PIPE, stderr=PIPE)
-                out, stderr = p.communicate(input=None)
+                out, stderr = p.communicate(input=None, timeout=300)
                 stdout = out.decode(sys.stdin.encoding)
             except Exception as e:
                 self.error(f"Unable to run testssl.sh: {e}")
