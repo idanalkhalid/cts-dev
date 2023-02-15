@@ -8,6 +8,7 @@ spiderfoot.crt
 spiderfoot.key
 
 spiderfoot/static/node_modules/*
+cts/static/node_modules/*
 
 spiderfoot/static/node_modules/alertifyjs/*
 spiderfoot/static/node_modules/alertifyjs/build/*
