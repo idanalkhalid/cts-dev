@@ -1105,6 +1105,13 @@ class SpiderFootWebUi:
 
         raise cherrypy.HTTPRedirect(self.docroot + '/scanprofile/' + slug)
 
+    # Change status active
+    @cherrypy.expose
+    def changeprofilestatus(self, scanprofile_id):
+        dbh = SpiderFootDb(self.config)
+        dbh.scanProfileActiveStatus(scanprofile_id)
+        raise cherrypy.HTTPRedirect(self.docroot + '/scanprofiles')
+
     @cherrypy.expose
     def clonescan(self: 'SpiderFootWebUi', id: str) -> str:
         """Clone an existing scan (pre-selected options in the newscan page).

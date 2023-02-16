@@ -2110,6 +2110,35 @@ class SpiderFootDb:
 
         return True
 
+    # Update scan profile
+    def scanProfileActiveStatus(self, scanprofile_id):
+        qry0 = """
+            UPDATE tbl_custom_profiles 
+            SET status = 0
+        """
+
+        try:
+            self.dbh.execute(qry0)
+            self.conn.commit()
+        except sqlite3.Error as e:
+            self.sf.fatal("Unable to get instances in DB: " + e.args[0])
+
+        qry = """
+            UPDATE tbl_custom_profiles 
+            SET status = 1
+            WHERE id = ?
+        """
+
+        qvars = [scanprofile_id]
+
+        try:
+            self.dbh.execute(qry, qvars)
+            self.conn.commit()
+        except sqlite3.Error as e:
+            self.sf.fatal("Unable to get instances in DB: " + e.args[0])
+
+        return True
+
     # Delete scan profile
     def scanProfileInstanceDelete(self, slug):
         qry = """

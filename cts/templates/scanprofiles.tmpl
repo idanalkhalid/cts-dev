@@ -15,6 +15,7 @@
           <th>Slug</th>
           <th>Description</th>
           <th>Modules</th>
+          <th>Status</th>
           <th class="text-center">Action</th>
         </tr>
       </thead>
@@ -26,7 +27,17 @@
             <td>${scanprofile[2]}</td>
             <td>${scanprofile[3]}</td>
             <td>${scanprofile[4]}</td>
+            <td>
+            % if scanprofile[5] == 1:
+              <span class="badge text-bg-primary">Active</span>
+            %else:
+              <span class="badge text-bg-danger">Inactive</span>
+            %endif
+            </td>
             <td class="text-center" style="white-space:normal ">
+            % if scanprofile[5] == 0:
+              <button class="btn btn-primary" onClick="changestatus(${scanprofile[0]})" rel="tooltip" title="Change Active Profile" ><i class="bi bi-shuffle"></i></button>
+            % endif
               <a class="btn btn-danger" rel="tooltip" title="Delete Profile" href="${docroot}/scanprofiledelete?idset=${scanprofile[2]}">
                 <i class="bi bi-trash"></i>
               </a>
@@ -167,6 +178,34 @@
       window.location.href = '${docroot}/scanprofiledelete?idset=' + ids.join(',');
     }
   }
+  function changestatus(id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to change active profile?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, Change it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            var req = $.ajax({
+              url: "/changeprofilestatus",
+              type: "POST",
+              data: {scanprofile_id: id},
+              success: function () {
+                  //Swal.fire(
+                  //    'Changed!',
+                  //    'Your active profile has been changed.',
+                  //    'success'
+                  //)
+                  location.reload();
+              }
+            });
+        }
+    });
+}
 
 </script>
 </main>
