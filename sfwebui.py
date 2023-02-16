@@ -1178,8 +1178,12 @@ class SpiderFootWebUi:
         if res is None:
             return self.error("Scan ID not found.")
 
-        templ = Template(filename='cts/templates/scaninfo.tmpl',
-                         lookup=self.lookup, input_encoding='utf-8')
+        if cherrypy.session[ROLE_KEY] == 'admin':
+            templ = Template(filename='cts/templates/scaninfo.tmpl',
+                             lookup=self.lookup, input_encoding='utf-8')
+        else:
+            templ = Template(filename='cts/member/scaninfo.tmpl',
+                             lookup=self.lookup, input_encoding='utf-8')
         return templ.render(id=id, name=html.escape(res[0]), status=res[5], docroot=self.docroot, version=__version__,
                             pageid="SCANLIST")
 
@@ -1593,9 +1597,12 @@ class SpiderFootWebUi:
         Raises:
             HTTPRedirect: redirect to new scan info page
         """
-
-        scanname = self.cleanUserInput([scanname])[0]
-        scantarget = self.cleanUserInput([scantarget])[0]
+        if cherrypy.session[ROLE_KEY] == 'admin':
+            scanname = self.cleanUserInput([scanname])[0]
+            scantarget = self.cleanUserInput([scantarget])[0]
+        else:
+            scantarget = self.cleanUserInput([scantarget])[0]
+            scanname = scantarget
 
         if not scanname:
             if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
@@ -1610,13 +1617,6 @@ class SpiderFootWebUi:
                 return json.dumps(["ERROR", "Incorrect usage: scan target was not specified."]).encode('utf-8')
 
             return self.error("Invalid request: scan target was not specified.")
-
-        if not typelist and not modulelist and not usecase:
-            if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
-                cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-                return json.dumps(["ERROR", "Incorrect usage: no modules specified for scan."]).encode('utf-8')
-
-            return self.error("Invalid request: no modules specified for scan.")
 
         targetType = SpiderFootHelpers.targetTypeFromString(scantarget)
         if targetType is None:
@@ -1638,9 +1638,19 @@ class SpiderFootWebUi:
         sf = SpiderFoot(cfg)
 
         modlist = list()
-        # User selected custom profile
-        if scanprofile:
-            modlist = scanprofile.split(',')
+        if cherrypy.session[ROLE_KEY] == 'admin':
+            if not typelist and not modulelist and not usecase:
+                if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
+                    cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
+                    return json.dumps(["ERROR", "Incorrect usage: no modules specified for scan."]).encode('utf-8')
+
+                return self.error("Invalid request: no modules specified for scan.")
+            # User selected custom profile
+            if scanprofile:
+                modlist = scanprofile.split(',')
+        else:
+            activeProfile = dbh.scanActiveProfileGet()
+            modlist = activeProfile[4].split(',')
 
         # User selected modules
         if len(modlist) == 0 and modulelist:

@@ -55,7 +55,8 @@ class SpiderFootDb:
             name         VARCHAR NOT NULL, \
             slug         VARCHAR NOT NULL UNIQUE, \
             description  VARCHAR NOT NULL, \
-            modules      VARCHAR \
+            modules      VARCHAR, \
+            status       INT NOT NULL DEFAULT 0 \
         )",
         "CREATE TABLE tbl_users ( \
             id           INTEGER NOT NULL PRIMARY KEY, \
@@ -2078,8 +2079,20 @@ class SpiderFootDb:
                 raise IOError(
                     "SQL error encountered when retrieving scan instance") from e
 
-    # Update scan profile
+    # Get active profile
+    def scanActiveProfileGet(self) -> list:
+        qry = """
+            SELECT * FROM tbl_custom_profiles WHERE status = 1;
+            """
+        with self.dbhLock:
+            try:
+                self.dbh.execute(qry)
+                return self.dbh.fetchone()
+            except sqlite3.Error as e:
+                raise IOError(
+                    "SQL error encountered when retrieving scan instance") from e
 
+    # Update scan profile
     def scanProfileInstanceUpdate(self, scanprofile_id, name, slug, description, modules):
         qry = """
             UPDATE tbl_custom_profiles 
@@ -2242,3 +2255,12 @@ class SpiderFootDb:
             self.sf.fatal("Unable to update instance in DB: " + e.args[0])
 
         return True
+
+    def scanCategory(self):
+        qry = "SELECT * FROM tbl_categories"
+        try:
+            self.dbh.execute(qry)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            self.sf.error(
+                "SQL error encountered when fetching result summary: " + e.args[0])
